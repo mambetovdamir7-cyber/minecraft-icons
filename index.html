@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Иконки Майнкрафта — галерея текстур 1.21.4</title>
+<meta name="description" content="Коллекция оригинальных иконок Minecraft: предметы, блоки, инструменты, оружие и еда. PNG 16×16, скачивание в один клик.">
+<meta name="author" content="smuzzy milovski">
+<meta name="theme-color" content="#101317">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="preload" href="assets/fonts/PressStart2P-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="bg-layer" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="Наверх">
+      <img class="brand-icon" src="assets/icons/diamond_block.png" alt="" width="32" height="32">
+      <span class="brand-text">MINECRAFT<i>/ICONS</i></span>
+    </a>
+
+    <label class="search" for="q">
+      <svg class="search-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 L15 15"/></svg>
+      <input id="q" type="search" placeholder="Алмаз, меч, торт…" autocomplete="off" spellcheck="false" aria-label="Поиск по иконкам">
+      <kbd>/</kbd>
+    </label>
+
+    <div class="top-stat">
+      <b id="stat-total">—</b>
+      <span>иконок</span>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <div class="hero-badges">
+          <span class="badge">Java 1.21.4</span>
+          <span class="badge">PNG 16×16</span>
+          <span class="badge" id="badge-count">коллекция</span>
+        </div>
+        <h1>Иконки<span class="accent">Майнкрафта</span></h1>
+        <p class="hero-lead">
+          Оригинальные текстуры предметов и блоков — pixel-perfect, без сжатия и фоновых артефактов.
+          Ищите по названию, открывайте карточку, копируйте команду <code>/give</code> и качайте PNG.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#gallery">Открыть галерею</a>
+          <a class="btn ghost" href="icons.zip" download>Скачать всё .zip</a>
+        </div>
+      </div>
+
+      <div class="hero-shelf" aria-hidden="true">
+        <div class="shelf-grid" id="shelf"></div>
+        <div class="shelf-glow"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gallery" id="gallery">
+    <div class="wrap">
+      <div class="bar">
+        <div class="chips" id="chips" role="tablist" aria-label="Категории"></div>
+        <div class="shown" id="shown"></div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="empty" id="empty" hidden>
+        <img src="assets/favicon.png" alt="" width="64" height="64">
+        <p class="empty-title">Пусто</p>
+        <p class="empty-text">Ничего не нашлось. Попробуйте «алмаз», «торт» или сбросьте фильтр.</p>
+        <button class="btn ghost" id="reset" type="button">Сбросить</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+
+    <div class="author">
+      <div class="author-avatar" aria-hidden="true">SM</div>
+      <div class="author-meta">
+        <span class="author-label">Создатель сайта</span>
+        <p class="author-name">smuzzy milovski</p>
+        <a class="author-tg" href="https://t.me/smuzzych" target="_blank" rel="noopener noreferrer" aria-label="Telegram @smuzzych">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.6.8l-4.4-3.2-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.5 8.2-7.4c.4-.3-.1-.5-.6-.2L7.8 12.6l-4.4-1.3c-.9-.3-.9-.9.2-1.3L20.5 3c.9-.3 1.6.2 1.4 1.3z"/></svg>
+          <span>@smuzzych</span>
+        </a>
+      </div>
+    </div>
+
+    <p class="foot-note">
+      Текстуры принадлежат Mojang AB. Сайт фанатский и не связан с Mojang или Microsoft.
+    </p>
+  </div>
+
+  <div class="wrap foot-bottom">
+    <span>© 2026 · Иконки Майнкрафта</span>
+    <span class="foot-made">Собрано 20.05.2026</span>
+    <a class="foot-top" href="#top">Наверх ↑</a>
+  </div>
+</footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-back" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <button class="modal-close" data-close type="button" aria-label="Закрыть">✕</button>
+
+    <div class="modal-left">
+      <div class="preview">
+        <img id="m-img" alt="" width="256" height="256">
+      </div>
+      <div class="preview-caption" id="m-src"></div>
+    </div>
+
+    <div class="modal-right">
+      <span class="m-cat" id="m-cat"></span>
+      <h2 id="m-name">—</h2>
+      <p class="m-en" id="m-en"></p>
+      <p class="m-note" id="m-note"></p>
+
+      <dl class="specs">
+        <div><dt>ID</dt><dd id="m-id">—</dd></div>
+        <div><dt>Размер</dt><dd id="m-size">—</dd></div>
+        <div><dt>Категория</dt><dd id="m-cat2">—</dd></div>
+      </dl>
+
+      <div class="m-actions">
+        <a class="btn primary" id="m-dl" download>Скачать PNG</a>
+        <button class="btn ghost" id="m-copy" type="button">Копировать /give</button>
+      </div>
+
+      <div class="m-nav">
+        <button class="nav-btn" id="m-prev" type="button">← Назад</button>
+        <span class="nav-pos" id="m-pos"></span>
+        <button class="nav-btn" id="m-next" type="button">Далее →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

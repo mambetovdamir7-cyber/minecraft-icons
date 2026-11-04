@@ -1674,3 +1674,33 @@ code {
 .farm-steps { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
 .farm-steps li { font-size: 13px; color: #c3cad3; line-height: 1.45; }
 .farm-out { margin: 0; padding-top: 10px; border-top: 1px solid rgba(43, 51, 62, .7); font-size: 13px; color: var(--diamond); }
+
+
+/* свой предмет */
+.ed-custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed rgba(60, 224, 200, .28);
+  border-radius: 8px;
+  background: rgba(60, 224, 200, .04);
+  margin-bottom: 8px;
+}
+.ed-custom .ed-label { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--diamond); }
+.ed-input {
+  height: 36px;
+  padding: 0 10px;
+  background: rgba(0, 0, 0, .3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  min-width: 150px;
+}
+.ed-input:focus { border-color: rgba(60, 224, 200, .5); }
+.ed-status { margin: 0 0 12px; font-size: 12.5px; color: var(--dim); min-height: 18px; }
+.ed-status.is-ok { color: var(--diamond); }

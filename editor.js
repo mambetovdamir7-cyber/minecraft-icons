@@ -124,6 +124,7 @@
   let history = [];
   let drawing = false;
   const pack = new Map();
+  const customMeta = new Map();   // id -> { name }
 
   function snapshot() {
     try {
@@ -136,6 +137,14 @@
     color = hex;
     $("tex-color").value = hex;
     $("tex-hex").value = hex;
+  }
+
+
+  function status(msg, ok) {
+    const el = $("tex-status");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.toggle("is-ok", !!ok);
   }
 
   function render() {
@@ -236,6 +245,30 @@
     bctx.putImageData(img, 0, 0);
   }
 
+
+  function createCustom() {
+    const rawId = ($("tex-new-id").value || "").trim().toLowerCase();
+    const name = ($("tex-new-name").value || "").trim();
+    const id = rawId.replace(/[^a-z0-9_]/g, "_").replace(/^_+|_+$/g, "");
+    if (!id || !/^[a-z0-9_]{2,40}$/.test(id)) {
+      status("ID: латиница, цифры и _, от 2 символов");
+      return;
+    }
+    if (BY_ID[id]) {
+      status("Такой предмет уже есть в каталоге — он перезапишется в паке", false);
+    } else {
+      status("Создан свой предмет: " + id, true);
+    }
+    customMeta.set(id, { name: name });
+    currentId = id;
+    currentKind = "item";
+    history = [];
+    bctx.clearRect(0, 0, SIZE, SIZE);
+    render();
+    $("tex-current").textContent = name ? name + " (" + id + ")" : id;
+    highlightList();
+  }
+
   /* ---------- пак ---------- */
   function packMeta() {
     return JSON.stringify({
@@ -285,7 +318,7 @@
       name.textContent = id;
       row.appendChild(name);
       const kind = document.createElement("b");
-      kind.textContent = entry.kind;
+      kind.textContent = customMeta.has(id) ? "custom" : entry.kind;
       row.appendChild(kind);
       const del = document.createElement("button");
       del.type = "button";
@@ -308,11 +341,32 @@
     files.push({ name: "pack.png", data: dataUrlToBytes(firstUrl) });
 
     pack.forEach((entry, id) => {
-      files.push({
-        name: "assets/minecraft/textures/" + entry.kind + "/" + id + ".png",
-        data: dataUrlToBytes(entry.url),
-      });
+      const folder = entry.kind === "block" ? "block" : "item";
+      const base = "assets/minecraft/textures/" + folder + "/" + id + ".png";
+      files.push({ name: base, data: dataUrlToBytes(entry.url) });
+
+      // своему предмету добавляем модель, чтобы её можно было подключить датапаком
+      if (customMeta.has(id)) {
+        const model = {
+          parent: folder === "block" ? "minecraft:block/cube_all" : "minecraft:item/generated",
+          textures: folder === "block" ? { all: "minecraft:" + folder + "/" + id } : { layer0: "minecraft:" + folder + "/" + id },
+        };
+        files.push({
+          name: "assets/minecraft/models/" + folder + "/" + id + ".json",
+          data: new TextEncoder().encode(JSON.stringify(model, null, 2)),
+        });
+      }
     });
+    const lang = {};
+    customMeta.forEach((meta, id) => {
+      if (meta.name && pack.has(id)) lang["item.minecraft." + id] = meta.name;
+    });
+    if (Object.keys(lang).length) {
+      const utf8 = new TextEncoder().encode(JSON.stringify(lang, null, 2));
+      files.push({ name: "assets/minecraft/lang/ru_ru.json", data: utf8 });
+      files.push({ name: "assets/minecraft/lang/en_us.json", data: utf8 });
+    }
+
     return zipStore(files);
   }
 
@@ -446,6 +500,8 @@
     download(new Blob([dataUrlToBytes(c.toDataURL("image/png"))], { type: "image/png" }), currentId + ".png");
   });
 
+  $("tex-new").addEventListener("click", createCustom);
+  $("tex-new-id").addEventListener("keydown", (ev) => { if (ev.key === "Enter") createCustom(); });
   $("tex-q").addEventListener("input", (e) => renderTexList(e.target.value));
 
   /* ---------- инициализация ---------- */

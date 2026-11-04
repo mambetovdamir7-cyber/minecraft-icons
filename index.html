@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Иконки Майнкрафта — галерея текстур 1.21.4</title>
-<meta name="description" content="Коллекция оригинальных иконок Minecraft: предметы, блоки, инструменты, оружие и еда. PNG 16×16, скачивание в один клик.">
+<title>Minecraft Utilities — иконки, скины, текстуры и крафты</title>
+<meta name="description" content="Minecraft Utilities: каталог иконок, редактор скинов, рисование текстур под ресурспак и все крафты игры. Java Edition 1.21.4.">
 <meta name="author" content="smuzzy milovski">
 <meta name="theme-color" content="#101317">
 <link rel="icon" href="assets/favicon.png" type="image/png">
@@ -19,7 +19,7 @@
   <div class="wrap topbar-inner">
     <a class="brand" href="#top" aria-label="Наверх">
       <img class="brand-icon" src="assets/icons/diamond_block.png" alt="" width="32" height="32">
-      <span class="brand-text">MINECRAFT<i>/ICONS</i></span>
+      <span class="brand-text">MINECRAFT<i>/UTILITIES</i></span>
     </a>
 
     <label class="search" for="q">
@@ -41,18 +41,18 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <div class="hero-badges">
-          <span class="badge">Java 1.21.4</span>
+          <span class="badge">Java 26.3</span>
           <span class="badge">PNG 16×16</span>
           <span class="badge" id="badge-count">коллекция</span>
         </div>
-        <h1>Иконки<span class="accent">Майнкрафта</span></h1>
+        <h1>MINECRAFT<span class="accent">UTILITIES</span></h1>
         <p class="hero-lead">
-          Полный каталог текстур Java Edition: все предметы и блоки игры. Ищите по названию,
-          открывайте карточку, копируйте команду <code>/give</code> и качайте PNG в нужном
-          размере — 16×16 оригинал или пиксельный апскейл 64/128/256 без сглаживания.
+          Инструменты для Java Edition: полный каталог иконок, редактор скинов, рисование
+          текстур под ресурспак и все крафты с зельями. Всё в браузере, без установки —
+          качайте PNG 16×16 или апскейл 64/128/256 без сглаживания.
         </p>
         <div class="hero-actions">
-          <a class="btn primary" href="#gallery">Открыть галерею</a>
+          <a class="btn primary" href="#view-gallery">Открыть галерею</a>
           <a class="btn ghost" href="icons.zip" download>Скачать всё .zip</a>
         </div>
       </div>
@@ -64,8 +64,28 @@
     </div>
   </section>
 
-  <section class="gallery" id="gallery">
+  <div class="wrap">
+    <nav class="tabs" id="tabs" aria-label="Разделы сайта">
+      <button class="tab is-active" type="button" data-mode="gallery">Галерея</button>
+      <button class="tab" type="button" data-mode="recipes">Крафты</button>
+      <button class="tab" type="button" data-mode="textures">Текстуры</button>
+      <button class="tab" type="button" data-mode="collections">Коллекции</button>
+      <button class="tab" type="button" data-mode="favorites">Избранное <b id="fav-count">0</b></button>
+      <button class="tab" type="button" data-mode="about">О проекте</button>
+    </nav>
+  </div>
+
+  <section class="gallery" id="view-gallery">
     <div class="wrap">
+
+      <div class="coll-head" id="coll-head" hidden>
+        <button class="btn ghost sm" id="coll-back" type="button">← Все коллекции</button>
+        <div class="coll-head-text">
+          <h2 id="coll-title">—</h2>
+          <span class="coll-sub" id="coll-sub"></span>
+        </div>
+      </div>
+
       <div class="bar">
         <div class="chips" id="chips" role="tablist" aria-label="Категории"></div>
         <div class="shown" id="shown"></div>
@@ -76,9 +96,154 @@
 
       <div class="empty" id="empty" hidden>
         <img src="assets/favicon.png" alt="" width="64" height="64">
-        <p class="empty-title">Пусто</p>
-        <p class="empty-text">Ничего не нашлось. Попробуйте «алмаз», «торт» или сбросьте фильтр.</p>
+        <p class="empty-title" id="empty-title">Пусто</p>
+        <p class="empty-text" id="empty-text">Ничего не нашлось. Попробуйте «алмаз», «торт» или сбросьте фильтр.</p>
         <button class="btn ghost" id="reset" type="button">Сбросить</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane" id="view-collections" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Коллекции</h2>
+      <p class="pane-sub">Готовые подборки: сеты брони, еда, зелья, красный камень и другое.</p>
+      <div class="coll-grid" id="coll-grid"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="view-recipes" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Крафты</h2>
+      <p class="pane-sub">1 713 рецептов Minecraft 26.3: верстак, печь, плавильня, коптильня,
+        костёр, камнерез и кузнечный стол. Нажми на карточку — откроется сам предмет.</p>
+
+      <div class="rec-bar">
+        <div class="chips" id="rec-chips"></div>
+        <input class="rec-search" id="rec-q" type="search" placeholder="Поиск: алмазный меч, торт…" autocomplete="off" aria-label="Поиск по крафтам">
+      </div>
+
+      <div class="rec-total" id="rec-total">Загрузка…</div>
+      <div class="rec-grid" id="rec-grid"></div>
+      <div class="rec-more" id="rec-more" hidden>
+        <button class="btn ghost" type="button">Показать ещё</button>
+      </div>
+
+      <h3 class="pane-h3">Варка зелий</h3>
+      <p class="pane-sub small">Основа: вода + адский нарост. Ингредиент задаёт эффект,
+        редстоун/светопыль/порох меняют тип и силу зелья.</p>
+      <div class="potion-table" id="potion-table"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="view-textures" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Текстуры</h2>
+      <p class="pane-sub">Выбери предмет, нарисуй свою текстуру 16×16 и собери ресурспак.
+        Пак грузится в 1.20.1 … 26.3 и дальше (внутри <code>supported_formats</code>).</p>
+
+      <div class="ed-layout">
+        <aside class="ed-side">
+          <input class="rec-search ed-search" id="tex-q" type="search" placeholder="Найти предмет…" autocomplete="off" aria-label="Поиск предмета">
+          <div class="tex-list" id="tex-list"></div>
+        </aside>
+
+        <div class="ed-main">
+          <div class="ed-title">
+            <span class="ed-label">Редактируется:</span>
+            <b id="tex-current">—</b>
+          </div>
+
+          <div class="ed-toolbar">
+            <div class="tools" id="tex-tools">
+              <button type="button" class="tool is-active" data-tool="pencil">Карандаш</button>
+              <button type="button" class="tool" data-tool="eraser">Ластик</button>
+              <button type="button" class="tool" data-tool="fill">Заливка</button>
+              <button type="button" class="tool" data-tool="pick">Пипетка</button>
+            </div>
+            <div class="ed-colors">
+              <input type="color" id="tex-color" value="#6ec25a" aria-label="Цвет">
+              <input class="hex" id="tex-hex" value="#6ec25a" aria-label="HEX цвет" spellcheck="false">
+            </div>
+            <div class="ed-history">
+              <button type="button" class="btn ghost sm" id="tex-undo">Отменить</button>
+              <button type="button" class="btn ghost sm" id="tex-reset">Очистить</button>
+            </div>
+          </div>
+
+          <div class="ed-swatches" id="tex-swatches"></div>
+
+          <div class="ed-stage">
+            <canvas id="tex-canvas" width="480" height="480"></canvas>
+          </div>
+
+          <div class="ed-actions">
+            <button type="button" class="btn primary" id="tex-add">Добавить в пак</button>
+            <a class="btn ghost is-off" id="tex-pack" href="#" download="minecraft-utilities-pack.zip">Скачать пак (0)</a>
+            <button type="button" class="btn ghost" id="tex-png">Скачать PNG</button>
+          </div>
+
+          <div class="pack-list" id="pack-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane about" id="view-about" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">О проекте</h2>
+      <p class="pane-sub">Фанатская галерея текстур Minecraft Java Edition 1.21.4.</p>
+
+      <div class="about-grid">
+        <article class="about-card">
+          <h3>1 059 текстур в одном месте</h3>
+          <p>Все предметы игры и все блоки, у которых нет предметной иконки. Дубли и служебные
+            кадры анимаций убраны, поэтому в каталоге нет мусора вроде <code>clock_37</code>.</p>
+        </article>
+
+        <article class="about-card">
+          <h3>Почему 16×16</h3>
+          <p>Это родное разрешение ванильных текстур Java Edition — других в игре нет.
+            При скачивании можно выбрать 16, 64, 128 или 256 px: увеличение идёт целыми пикселями
+            (<code>imageSmoothingEnabled = false</code>), без мыла и интерполяции.</p>
+        </article>
+
+        <article class="about-card">
+          <h3>Откуда текстуры</h3>
+          <p>Оригинальные PNG из ресурсов игры 1.21.4, собранные из клиентских ассетов.
+            Ничего не перерисовывалось и не сжималось с потерей качества.</p>
+        </article>
+
+        <article class="about-card">
+          <h3>Как пользоваться</h3>
+          <p>Клавиша <code>/</code> — поиск, <code>←</code> и <code>→</code> — листать карточки,
+            <code>Esc</code> — закрыть. Звёздочка на карточке добавляет иконку в «Избранное»,
+            оно хранится в браузере и никуда не отправляется.</p>
+        </article>
+
+        <article class="about-card">
+          <h3>Команда для игры</h3>
+          <p>В карточке есть кнопка «Копировать <code>/give</code>» — она кладёт в буфер
+            <code>/give @p minecraft:&lt;id&gt; 1</code>. ID показывается рядом с названием.</p>
+        </article>
+
+        <article class="about-card">
+          <h3>Лицензия</h3>
+          <p>Текстуры принадлежат Mojang AB / Microsoft. Сайт фанатский, не связан с Mojang
+            и не претендует на их права. Использование текстур в своих проектах регулируется
+            правилами Mojang.</p>
+        </article>
+      </div>
+
+      <div class="about-author">
+        <div class="about-author-text">
+          <span class="author-label">Сайт собрал</span>
+          <p class="author-name">smuzzy milovski</p>
+          <a class="author-tg" href="https://t.me/smuzzych" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.6.8l-4.4-3.2-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.5 8.2-7.4c.4-.3-.1-.5-.6-.2L7.8 12.6l-4.4-1.3c-.9-.3-.9-.9.2-1.3L20.5 3c.9-.3 1.6.2 1.4 1.3z"/></svg>
+            <span>@smuzzych</span>
+          </a>
+        </div>
+        <a class="btn ghost" href="https://github.com/mambetovdamir7-cyber/minecraft-icons" target="_blank" rel="noopener noreferrer">Исходники на GitHub</a>
       </div>
     </div>
   </section>
@@ -106,7 +271,7 @@
   </div>
 
   <div class="wrap foot-bottom">
-    <span>© 2026 · Иконки Майнкрафта</span>
+    <span>© 2026 · Minecraft Utilities</span>
     <span class="foot-made">Собрано 20.05.2026</span>
     <a class="foot-top" href="#top">Наверх ↑</a>
   </div>
@@ -152,6 +317,7 @@
       <div class="m-actions">
         <a class="btn primary" id="m-dl" download>Скачать PNG · 128px</a>
         <button class="btn ghost" id="m-copy" type="button">Копировать /give</button>
+        <button class="btn ghost" id="m-fav" type="button" aria-pressed="false">☆ В избранное</button>
       </div>
 
       <div class="m-nav">
@@ -168,5 +334,6 @@
 <script src="icons.bundle.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script src="editor.js"></script>
 </body>
 </html>

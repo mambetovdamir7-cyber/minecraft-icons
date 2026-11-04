@@ -1,9 +1,9 @@
-# Иконки Майнкрафта
+# Minecraft Utilities
 
 Статический сайт-галерея оригинальных текстур Minecraft 1.21.4 (Java Edition):
 все предметы и блоки игры — 1 059 иконок.
 
-**Живая версия:** <https://mambetovdamir7-cyber.github.io/minecraft-icons/>
+**Живая версия:** <https://mambetovdamir7-cyber.github.io/minecraft-utilities/>
 
 **Автор: smuzzy milovski** — Telegram [@smuzzych](https://t.me/smuzzych).
 

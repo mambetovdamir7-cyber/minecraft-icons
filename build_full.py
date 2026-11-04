@@ -17,12 +17,14 @@ from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-ICONS = os.path.join(ROOT, "assets", "icons")
+ICON_DIR = "icons-263"
+ICONS = os.path.join(ROOT, "assets", ICON_DIR)
 os.makedirs(ICONS, exist_ok=True)
 
-REF = "1.21.4"
-RAW = f"https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/{REF}/assets/minecraft/textures"
-API = f"https://api.github.com/repos/InventivetalentDev/minecraft-assets/contents/assets/minecraft/textures"
+REF_TAG = "26.3-assets"      # тег misode/mcmeta с ассетами
+VERSION = "26.3"             # версия игры для подписей
+RAW = f"https://raw.githubusercontent.com/misode/mcmeta/{REF_TAG}/assets/minecraft/textures"
+TREE_API = f"https://api.github.com/repos/misode/mcmeta/git/trees/{REF_TAG}?recursive=1"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; icon-gallery-builder)"}
 
 # ---------------------------------------------------------------- словарь
@@ -133,7 +135,13 @@ ADJS = {
 # избранные: id -> (ru, en, cat, note) — берём из старого data.js
 CURATED_FILE = os.path.join(ROOT, "data.js")
 
+def has(name, key):
+    """Совпадение по границе слова: leggings не должно матчить egg."""
+    return name == key or ("_" + name + "_").find("_" + key + "_") >= 0
+
+
 CAT_RULES = [
+    ("armor", ("helmet", "chestplate", "leggings", "boots", "armor")),
     ("weapon", ("sword", "bow", "arrow", "crossbow", "trident", "shield", "mace", "spear", "triden")),
     ("tool", ("pickaxe", "shovel", "hoe", "shears", "fishing_rod", "flint_and_steel", "bucket",
               "spyglass", "brush", "axe", "igniter", "compass", "clock", "map", "lead", "name_tag")),
@@ -160,22 +168,36 @@ NUM_RE = re.compile(r"^(.*)_\d+$")
 
 
 # ---------------------------------------------------------------- утилиты
-def fetch(url, tries=4):
+def fetch(url, tries=6):
+    import time as _t
     last = None
     for n in range(tries):
         try:
             req = urllib.request.Request(url, headers=UA)
-            with urllib.request.urlopen(req, timeout=45) as r:
-                return r.read()
+            with urllib.request.urlopen(req, timeout=90) as r:
+                data = r.read()
+                if r.length is not None and len(data) < r.length:
+                    raise IOError("short read")
+                return data
         except Exception as e:  # noqa: BLE001
             last = e
+            _t.sleep(1.5 * (n + 1))
     raise last
 
 
+_tree_cache = {}
+
+
+def _tree():
+    if not _tree_cache:
+        _tree_cache["t"] = json.loads(fetch(TREE_API))["tree"]
+    return _tree_cache["t"]
+
+
 def listing(folder):
-    url = f"{API}/{folder}?ref={REF}"
-    data = json.loads(fetch(url))
-    return [x["name"] for x in data if x["name"].endswith(".png")]
+    prefix = f"assets/minecraft/textures/{folder}/"
+    return [p[len(prefix):] for p in (x["path"] for x in _tree())
+            if p.startswith(prefix) and p.endswith(".png")]
 
 
 def humanize(name):
@@ -212,7 +234,7 @@ def category(name, folder, block_set):
     low = name.lower()
     for cat, keys in CAT_RULES:
         for k in keys:
-            if k in low:
+            if has(low, k):
                 return cat
     return "material"
 
@@ -351,7 +373,7 @@ def main():
             src_rel = f"{folder}/{fname}"
             old = curated_by_src.get(src_rel) or curated.get(base)
             if old:
-                records.append({**old, "file": f"assets/icons/{fname}", "src": src_rel,
+                records.append({**old, "file": f"assets/{ICON_DIR}/{fname}", "src": src_rel,
                                 "w": img.width, "h": img.height})
                 continue
             ru = translate(base) or ""
@@ -361,7 +383,7 @@ def main():
                 "en": humanize(base),
                 "cat": category(base, folder, block_set),
                 "note": "",
-                "file": f"assets/icons/{fname}",
+                "file": f"assets/{ICON_DIR}/{fname}",
                 "src": src_rel,
                 "w": img.width,
                 "h": img.height,
@@ -371,16 +393,16 @@ def main():
                 print(f"  {done}/{len(tasks)}")
 
     # порядок: избранные -> по категориям -> по имени
-    cat_order = {"block": 0, "tool": 1, "weapon": 2, "food": 3, "material": 4, "rare": 5}
+    cat_order = {"block": 0, "armor": 1, "tool": 2, "weapon": 3, "food": 4, "material": 5, "rare": 6}
     records.sort(key=lambda r: (0 if not r.get("auto") else 1,
                                 cat_order.get(r["cat"], 9), r["en"].lower()))
 
     payload = {
         "cats": [{"id": c, "ru": r} for c, r in [
-            ("all", "Все"), ("block", "Блоки"), ("tool", "Инструменты"), ("weapon", "Оружие"),
-            ("food", "Еда"), ("material", "Материалы"), ("rare", "Редкое")]],
+            ("all", "Все"), ("block", "Блоки"), ("armor", "Броня"), ("tool", "Инструменты"),
+            ("weapon", "Оружие"), ("food", "Еда"), ("material", "Материалы"), ("rare", "Редкое")]],
         "items": records,
-        "version": REF,
+        "version": VERSION,
     }
     with open(os.path.join(ROOT, "data.json"), "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)

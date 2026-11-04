@@ -47,8 +47,9 @@
         </div>
         <h1>Иконки<span class="accent">Майнкрафта</span></h1>
         <p class="hero-lead">
-          Оригинальные текстуры предметов и блоков — pixel-perfect, без сжатия и фоновых артефактов.
-          Ищите по названию, открывайте карточку, копируйте команду <code>/give</code> и качайте PNG.
+          Полный каталог текстур Java Edition: все предметы и блоки игры. Ищите по названию,
+          открывайте карточку, копируйте команду <code>/give</code> и качайте PNG в нужном
+          размере — 16×16 оригинал или пиксельный апскейл 64/128/256 без сглаживания.
         </p>
         <div class="hero-actions">
           <a class="btn primary" href="#gallery">Открыть галерею</a>
@@ -71,6 +72,7 @@
       </div>
 
       <div class="grid" id="grid"></div>
+      <div id="sentinel" class="sentinel" hidden></div>
 
       <div class="empty" id="empty" hidden>
         <img src="assets/favicon.png" alt="" width="64" height="64">
@@ -134,8 +136,21 @@
         <div><dt>Категория</dt><dd id="m-cat2">—</dd></div>
       </dl>
 
+      <div class="m-size">
+        <div class="m-size-head">
+          <span class="m-size-label">Размер PNG</span>
+          <span class="m-size-hint">16×16 — оригинал · больше — целые пиксели</span>
+        </div>
+        <div class="sizes" id="m-sizes" role="group" aria-label="Размер скачиваемого PNG">
+          <button type="button" class="size" data-size="16" aria-pressed="false">16</button>
+          <button type="button" class="size" data-size="64" aria-pressed="false">64</button>
+          <button type="button" class="size is-active" data-size="128" aria-pressed="true">128</button>
+          <button type="button" class="size" data-size="256" aria-pressed="false">256</button>
+        </div>
+      </div>
+
       <div class="m-actions">
-        <a class="btn primary" id="m-dl" download>Скачать PNG</a>
+        <a class="btn primary" id="m-dl" download>Скачать PNG · 128px</a>
         <button class="btn ghost" id="m-copy" type="button">Копировать /give</button>
       </div>
 
@@ -150,6 +165,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="icons.bundle.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>

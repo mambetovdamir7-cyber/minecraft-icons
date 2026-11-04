@@ -1,5 +1,5 @@
 /* =========================================================
-   Иконки Майнкрафта — логика галереи
+   Иконки Майнкрафта — логика галереи (полный каталог)
    ========================================================= */
 (function () {
   "use strict";
@@ -10,17 +10,16 @@
   const ITEMS = DATA.items;
   const CATS = DATA.cats;
 
+  // все иконки приходят одним бандлом (window.MC_ICONS), иначе — по путям
+  const ICONS = window.MC_ICONS || {};
+  const srcOf = (item) => ICONS[item.id] || item.file;
+
   const CAT_COLOR = {
-    block: "#8fbf6a",
-    tool: "#86a9d4",
-    weapon: "#e07a6a",
-    food: "#e0b25c",
-    material: "#3ce0c8",
-    rare: "#b98cf5",
+    block: "#8fbf6a", tool: "#86a9d4", weapon: "#e07a6a",
+    food: "#e0b25c", material: "#3ce0c8", rare: "#b98cf5",
   };
   const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.ru]));
 
-  /* ---------- элементы ---------- */
   const $ = (id) => document.getElementById(id);
   const grid = $("grid");
   const chips = $("chips");
@@ -30,13 +29,17 @@
   const modal = $("modal");
   const toastEl = $("toast");
 
+  const PAGE = 240;             // сколько карточек добавляем за раз
   let activeCat = "all";
   let query = "";
-  let view = [];       // текущий отфильтрованный список
-  let current = -1;    // индекс открытой карточки
+  let view = [];
+  let rendered = 0;
+  let current = -1;
+  let size = 128;               // размер скачиваемого PNG
 
   /* ---------- утилиты ---------- */
   const norm = (s) => String(s).toLowerCase().replace(/ё/g, "е").trim();
+  const rgb = (hex) => hex;
 
   function el(tag, cls, text) {
     const n = document.createElement(tag);
@@ -50,23 +53,21 @@
     toastEl.textContent = msg;
     toastEl.classList.add("is-on");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 2200);
+    toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 2400);
   }
 
   /* ---------- полка в герое ---------- */
   function buildShelf() {
     const shelf = $("shelf");
-    const picks = ["diamond", "netherite_sword", "nether_star", "golden_apple", "ender_pearl", "tnt", "elytra", "emerald", "crafting_table"];
+    const picks = ["diamond", "netherite_sword", "nether_star", "golden_apple",
+                   "ender_pearl", "tnt", "elytra", "emerald", "crafting_table"];
     picks.forEach((id) => {
       const item = ITEMS.find(i => i.id === id);
       if (!item) return;
       const cell = el("div", "cell");
       const img = el("img");
-      img.src = item.file;
-      img.alt = "";
-      img.width = 56;
-      img.height = 56;
-      img.loading = "lazy";
+      img.src = srcOf(item); img.alt = ""; img.width = 56; img.height = 56;
+      img.loading = "lazy"; img.decoding = "async";
       cell.appendChild(img);
       shelf.appendChild(cell);
     });
@@ -91,65 +92,79 @@
           c.setAttribute("aria-selected", on ? "true" : "false");
         });
         render();
+        window.scrollTo({ top: $("gallery").offsetTop - 70, behavior: "smooth" });
       });
       chips.appendChild(b);
     });
   }
 
-  /* ---------- фильтрация ---------- */
+  /* ---------- фильтрация и отрисовка порциями ---------- */
   function matches(item) {
     if (activeCat !== "all" && item.cat !== activeCat) return false;
     if (!query) return true;
     const q = norm(query);
-    return norm(item.ru).includes(q)
-      || norm(item.en).includes(q)
-      || norm(item.id).includes(q)
-      || norm(CAT_LABEL[item.cat] || "").includes(q);
+    return norm(item.ru).includes(q) || norm(item.en).includes(q)
+        || norm(item.id).includes(q) || norm(CAT_LABEL[item.cat] || "").includes(q);
+  }
+
+  function makeCard(item, index) {
+    const card = el("article", "card");
+    card.dataset.id = item.id;
+    card.style.setProperty("--cat", CAT_COLOR[item.cat] || "#6ec25a");
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", item.ru + " — открыть карточку");
+
+    card.appendChild(el("span", "no", String(index + 1).padStart(2, "0")));
+
+    const slot = el("div", "slot");
+    const img = el("img");
+    img.src = srcOf(item);
+    img.alt = item.ru;
+    img.width = 64; img.height = 64;
+    img.loading = "lazy"; img.decoding = "async";
+    slot.appendChild(img);
+
+    card.appendChild(slot);
+    card.appendChild(el("h3", null, item.ru));
+    card.appendChild(el("span", "cat", CAT_LABEL[item.cat] || ""));
+
+    const open = (e) => {
+      if (e && e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      if (e) e.preventDefault();
+      openModal(index);
+    };
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", open);
+    return card;
+  }
+
+  function updateShown() {
+    shown.innerHTML = view.length
+      ? `Показано <b>${rendered}</b> из ${view.length}`
+      : `0 из ${ITEMS.length}`;
+  }
+
+  function appendChunk() {
+    const slice = view.slice(rendered, rendered + PAGE);
+    if (!slice.length) return;
+    const frag = document.createDocumentFragment();
+    slice.forEach((item, i) => frag.appendChild(makeCard(item, rendered + i)));
+    grid.appendChild(frag);
+    rendered += slice.length;
+    updateShown();
+    $("sentinel").hidden = rendered >= view.length;
   }
 
   function render() {
     view = ITEMS.filter(matches);
     grid.textContent = "";
-
-    const frag = document.createDocumentFragment();
-    view.forEach((item, i) => {
-      const card = el("article", "card");
-      card.dataset.id = item.id;
-      card.style.setProperty("--cat", CAT_COLOR[item.cat] || "#6ec25a");
-      card.tabIndex = 0;
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", item.ru + " — открыть карточку");
-
-      card.appendChild(el("span", "no", String(i + 1).padStart(2, "0")));
-
-      const slot = el("div", "slot");
-      const img = el("img");
-      img.src = item.file;
-      img.alt = item.ru;
-      img.width = 64;
-      img.height = 64;
-      img.loading = "lazy";
-      img.decoding = "async";
-      slot.appendChild(img);
-
-      card.appendChild(slot);
-      card.appendChild(el("h3", null, item.ru));
-      card.appendChild(el("span", "cat", CAT_LABEL[item.cat] || ""));
-
-      const open = (e) => { if (!e || e.type !== "keydown" || e.key === "Enter" || e.key === " ") { e && e.preventDefault(); openModal(i); } };
-      card.addEventListener("click", open);
-      card.addEventListener("keydown", open);
-
-      frag.appendChild(card);
-    });
-
-    grid.appendChild(frag);
-
+    rendered = 0;
+    $("sentinel").hidden = true;
     empty.hidden = view.length > 0;
-    shown.innerHTML = view.length
-      ? `Показано <b>${view.length}</b> из ${ITEMS.length}`
-      : `0 из ${ITEMS.length}`;
-    $("badge-count").textContent = `${ITEMS.length} иконок`;
+    appendChunk();
+    updateShown();
+    $("badge-count").textContent = `${ITEMS.length} текстур`;
     $("stat-total").textContent = String(ITEMS.length);
   }
 
@@ -166,13 +181,14 @@
     box.style.setProperty("--cat", CAT_COLOR[item.cat] || "#6ec25a");
 
     const mImg = $("m-img");
-    mImg.src = item.file;
+    mImg.src = srcOf(item);
     mImg.alt = item.ru;
 
     $("m-cat").textContent = CAT_LABEL[item.cat] || item.cat;
     $("m-name").textContent = item.ru;
-    $("m-en").textContent = item.en;
-    $("m-note").textContent = item.note || "";
+    $("m-en").textContent = item.ru === item.en ? "" : item.en;
+    const note = item.note || "Текстура Minecraft " + DATA.version + ". Оригинал 16×16, апскейл — целые пиксели без сглаживания.";
+    $("m-note").textContent = note;
     $("m-id").textContent = item.id;
     $("m-size").textContent = `${item.w}×${item.h} px`;
     $("m-cat2").textContent = CAT_LABEL[item.cat] || item.cat;
@@ -180,7 +196,8 @@
     $("m-pos").textContent = `${index + 1} / ${view.length}`;
 
     const dl = $("m-dl");
-    dl.href = item.file;
+    dl.dataset.id = item.id;
+    dl.href = srcOf(item);
     dl.setAttribute("download", item.id + ".png");
 
     modal.hidden = false;
@@ -189,7 +206,7 @@
       const u = new URL(location.href);
       u.searchParams.set("item", item.id);
       history.replaceState(null, "", u);
-    } catch { /* file:// без истории — не критично */ }
+    } catch { /* file:// */ }
     setTimeout(() => modal.querySelector(".modal-close").focus(), 30);
   }
 
@@ -203,8 +220,46 @@
 
   function step(dir) {
     if (current < 0 || !view.length) return;
-    const next = (current + dir + view.length) % view.length;
-    openModal(next);
+    openModal((current + dir + view.length) % view.length);
+  }
+
+  /* ---------- скачивание с нужным разрешением ---------- */
+  function downloadScaled(item, px) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const c = document.createElement("canvas");
+        c.width = px; c.height = px;
+        const ctx = c.getContext("2d");
+        ctx.imageSmoothingEnabled = false;      // честные квадратные пиксели
+        ctx.drawImage(img, 0, 0, px, px);
+        c.toBlob((blob) => {
+          if (!blob) { fallback(); return; }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${item.id}_${px}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 4000);
+          toast(`Скачано: ${item.id}_${px}.png`);
+        }, "image/png");
+      } catch (e) {
+        fallback();
+      }
+    };
+    img.onerror = () => fallback();
+    img.src = srcOf(item);
+
+    function fallback() {
+      const a = document.createElement("a");
+      a.href = srcOf(item);
+      a.download = `${item.id}.png`;
+      a.click();
+      toast("Скачан оригинал 16×16");
+    }
   }
 
   /* ---------- копирование команды ---------- */
@@ -217,11 +272,8 @@
       toast("Скопировано: " + cmd);
     } catch {
       const ta = document.createElement("textarea");
-      ta.value = cmd;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
+      ta.value = cmd; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
       try { document.execCommand("copy"); toast("Скопировано: " + cmd); }
       catch { toast(cmd); }
       ta.remove();
@@ -229,26 +281,40 @@
   }
 
   /* ---------- события ---------- */
-  input.addEventListener("input", () => {
-    query = input.value;
-    render();
-  });
-
+  input.addEventListener("input", () => { query = input.value; render(); });
   input.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { input.value = ""; query = ""; render(); input.blur(); }
     if (e.key === "Enter" && view.length) openModal(0);
   });
 
   $("reset").addEventListener("click", () => {
-    input.value = "";
-    query = "";
-    activeCat = "all";
+    input.value = ""; query = ""; activeCat = "all";
     [...chips.children].forEach(c => {
       const on = c.dataset.cat === "all";
       c.classList.toggle("is-active", on);
       c.setAttribute("aria-selected", on ? "true" : "false");
     });
     render();
+  });
+
+  $("m-sizes").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-size]");
+    if (!b) return;
+    size = Number(b.dataset.size);
+    [...$("m-sizes").children].forEach(x => {
+      const on = x === b;
+      x.classList.toggle("is-active", on);
+      x.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    $("m-dl").textContent = size === 16 ? "Скачать оригинал" : `Скачать PNG · ${size}px`;
+  });
+
+  $("m-dl").addEventListener("click", (e) => {
+    const item = view[current];
+    if (!item) return;
+    if (size === 16) return;             // прямая ссылка на оригинал
+    e.preventDefault();
+    downloadScaled(item, size);
   });
 
   modal.addEventListener("click", (e) => {
@@ -261,35 +327,40 @@
 
   document.addEventListener("keydown", (e) => {
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
-
     if (e.key === "/" && !typing) {
-      e.preventDefault();
-      input.focus();
-      input.select();
-      return;
+      e.preventDefault(); input.focus(); input.select(); return;
     }
-
     if (!modal.hidden) {
       if (e.key === "Escape") closeModal();
       if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
       if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
       return;
     }
-
-    if (e.key === "Escape" && typing) { input.blur(); }
+    if (e.key === "Escape" && typing) input.blur();
   });
+
+  // догрузка карточек при прокрутке
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => { if (en.isIntersecting) appendChunk(); });
+    }, { rootMargin: "600px" });
+    io.observe($("sentinel"));
+  } else {
+    window.addEventListener("scroll", () => {
+      if (window.innerHeight + window.scrollY > document.body.offsetHeight - 800) appendChunk();
+    });
+  }
 
   /* ---------- старт ---------- */
   buildShelf();
   buildChips();
 
-  // предзаполненный поиск: ?q=алмаз
   const qp = new URLSearchParams(location.search).get("q");
   if (qp) { input.value = qp; query = qp; }
 
   render();
+  $("m-dl").textContent = `Скачать PNG · ${size}px`;
 
-  // глубокая ссылка: ?item=diamond
   (function openFromURL() {
     const id = new URLSearchParams(location.search).get("item");
     if (!id) return;

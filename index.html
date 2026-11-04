@@ -68,6 +68,9 @@
     <nav class="tabs" id="tabs" aria-label="Разделы сайта">
       <button class="tab is-active" type="button" data-mode="gallery">Галерея</button>
       <button class="tab" type="button" data-mode="recipes">Крафты</button>
+      <button class="tab" type="button" data-mode="ench">Чары</button>
+      <button class="tab" type="button" data-mode="farms">Фермы</button>
+      <button class="tab" type="button" data-mode="skins">Скины</button>
       <button class="tab" type="button" data-mode="textures">Текстуры</button>
       <button class="tab" type="button" data-mode="collections">Коллекции</button>
       <button class="tab" type="button" data-mode="favorites">Избранное <b id="fav-count">0</b></button>
@@ -132,6 +135,94 @@
       <p class="pane-sub small">Основа: вода + адский нарост. Ингредиент задаёт эффект,
         редстоун/светопыль/порох меняют тип и силу зелья.</p>
       <div class="potion-table" id="potion-table"></div>
+    </div>
+  </section>
+
+
+
+  <section class="pane" id="view-ench" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Лучшие чары</h2>
+      <p class="pane-sub">Рабочие наборы на каждый инструмент и часть брони — для Minecraft 26.3.
+        Конфликты чар указаны в карточке.</p>
+      <div class="guide-grid" id="ench-grid"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="view-farms" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Фермы</h2>
+      <p class="pane-sub">Проверенные схемы: что нужно построить, как это работает и сколько даёт.</p>
+      <div class="guide-grid" id="farms-grid"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="view-skins" hidden>
+    <div class="wrap">
+      <h2 class="pane-title">Скины</h2>
+      <p class="pane-sub">Рисуй скин 64×64 или склей два скина по частям: голова, тело, руки, ноги.
+        Справа — 3D-превью, его можно крутить мышью.</p>
+
+      <div class="skin-layout">
+        <aside class="skin-side">
+          <div class="skin-slots">
+            <div class="skin-slot">
+              <span class="skin-slot-label">Скин A</span>
+              <img class="skin-thumb" data-slot="a" alt="Скин A" width="64" height="64">
+              <div class="skin-slot-actions">
+                <label class="btn ghost sm">Загрузить<input id="skin-load-a" type="file" accept="image/png" hidden></label>
+                <button class="btn ghost sm" id="skin-use-a" type="button">Взять A</button>
+              </div>
+            </div>
+            <div class="skin-slot">
+              <span class="skin-slot-label">Скин B</span>
+              <img class="skin-thumb" data-slot="b" alt="Скин B" width="64" height="64">
+              <div class="skin-slot-actions">
+                <label class="btn ghost sm">Загрузить<input id="skin-load-b" type="file" accept="image/png" hidden></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="skin-parts" id="skin-parts">
+            <span class="skin-parts-title">Склейка частей</span>
+            <div class="skin-part-row"><b>Голова</b><span class="skin-btns"><button type="button" data-part="head" data-from="a">из A</button><button type="button" data-part="head" data-from="b">из B</button></span></div>
+            <div class="skin-part-row"><b>Тело</b><span class="skin-btns"><button type="button" data-part="body" data-from="a">из A</button><button type="button" data-part="body" data-from="b">из B</button></span></div>
+            <div class="skin-part-row"><b>Руки</b><span class="skin-btns"><button type="button" data-part="arms" data-from="a">из A</button><button type="button" data-part="arms" data-from="b">из B</button></span></div>
+            <div class="skin-part-row"><b>Ноги</b><span class="skin-btns"><button type="button" data-part="legs" data-from="a">из A</button><button type="button" data-part="legs" data-from="b">из B</button></span></div>
+          </div>
+        </aside>
+
+        <div class="skin-main">
+          <div class="ed-toolbar">
+            <div class="tools" id="skin-tools">
+              <button type="button" class="tool is-active" data-tool="pencil">Карандаш</button>
+              <button type="button" class="tool" data-tool="eraser">Ластик</button>
+              <button type="button" class="tool" data-tool="fill">Заливка</button>
+              <button type="button" class="tool" data-tool="pick">Пипетка</button>
+            </div>
+            <div class="ed-colors">
+              <input type="color" id="skin-color" value="#6ec25a" aria-label="Цвет">
+              <input class="hex" id="skin-hex" value="#6ec25a" spellcheck="false" aria-label="HEX">
+            </div>
+            <div class="ed-history">
+              <button type="button" class="btn ghost sm" id="skin-undo">Отменить</button>
+              <button type="button" class="btn ghost sm" id="skin-clear">Очистить</button>
+            </div>
+          </div>
+
+          <div class="ed-swatches" id="skin-swatches"></div>
+
+          <div class="skin-stage">
+            <canvas id="skin-canvas" width="704" height="704"></canvas>
+            <div class="skin-3d" id="skin-3d"></div>
+          </div>
+
+          <div class="ed-actions">
+            <button type="button" class="btn primary" id="skin-save-64">Скачать PNG 64×64</button>
+            <button type="button" class="btn ghost" id="skin-save-128">Скачать PNG 128×128</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -335,5 +426,7 @@
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script src="editor.js"></script>
+<script src="skins.js"></script>
+<script src="guides.js"></script>
 </body>
 </html>

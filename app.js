@@ -359,17 +359,21 @@
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
 
+    const toTabs = () => window.scrollTo({ top: tabs.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
     const inGallery = GALLERY_MODES.has(next);
     $("view-gallery").hidden = !inGallery;
     $("view-collections").hidden = next !== "collections";
     $("view-about").hidden = next !== "about";
     $("view-recipes").hidden = next !== "recipes";
     $("view-textures").hidden = next !== "textures";
-    if (next === "recipes") { openRecipes(); toTabs(); return; }
-    if (next === "textures") { toTabs(); return; }
-    if (next === "textures") { toTabs(); return; }
+    $("view-skins").hidden = next !== "skins";
+    $("view-ench").hidden = next !== "ench";
+    $("view-farms").hidden = next !== "farms";
 
-    const toTabs = () => window.scrollTo({ top: tabs.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
+    if (next === "recipes") { openRecipes(); toTabs(); return; }
+    if (next === "textures" || next === "skins") { toTabs(); return; }
+    if (next === "ench") { if (window.MCU_GUIDES) MCU_GUIDES.ench(); toTabs(); return; }
+    if (next === "farms") { if (window.MCU_GUIDES) MCU_GUIDES.farms(); toTabs(); return; }
     if (next === "collections") { renderCollections(); toTabs(); return; }
     if (next === "about") { toTabs(); return; }
     render();
@@ -841,7 +845,7 @@
       if (found) { collection = found; showMode('collection'); return; }
     }
     const v = params.get('view');
-    if (v && ['gallery', 'recipes', 'textures', 'collections', 'favorites', 'about'].includes(v)) showMode(v);
+    if (v && ['gallery', 'recipes', 'ench', 'farms', 'skins', 'textures', 'collections', 'favorites', 'about'].includes(v)) showMode(v);
   })();
   $("m-dl").textContent = `Скачать PNG · ${size}px`;
 

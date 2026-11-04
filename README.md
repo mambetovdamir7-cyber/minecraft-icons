@@ -3,6 +3,8 @@
 Статический сайт-галерея оригинальных текстур Minecraft 1.21.4 (Java Edition):
 предметы, блоки, инструменты, оружие, еда и редкие вещи.
 
+**Живая версия:** <https://mambetovdamir7-cyber.github.io/minecraft-icons/>
+
 **Автор: smuzzy milovski** — Telegram [@smuzzych](https://t.me/smuzzych).
 
 ![Превью сайта](preview.png)
